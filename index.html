@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리 팟 멤버 명단 & 싸패 투표</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+  
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #e0e0e0;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .widget-container {
+    width: 100%;
+    max-width: 500px;
+    background-color: #fdfaf0;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .header {
+    background-color: #ffe650;
+    text-align: center;
+    padding: 30px 20px 10px;
+    border-bottom-left-radius: 40% 10px;
+    border-bottom-right-radius: 40% 10px;
+  }
+  .avatar {
+    font-size: 70px;
+    line-height: 1;
+    margin: 0 auto -35px;
+    background-color: #fffaf0;
+    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+  .title-section {
+    padding: 50px 20px 20px;
+    text-align: center;
+  }
+  h1 {
+    color: #6b4e31;
+    font-size: 22px;
+    margin: 0 0 8px;
+  }
+  p.subtitle {
+    color: #6b4e31;
+    font-size: 14px;
+    margin: 0;
+  }
+  .divider {
+    border-top: 2px dashed #f0c850;
+    margin: 10px 20px 20px;
+  }
+  .filters {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  .filter-btn {
+    background-color: white;
+    border: 2px solid #e0d8c0;
+    border-radius: 20px;
+    padding: 6px 14px;
+    margin: 0 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    color: #888;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover {
+    background-color: #f9f6ea;
+  }
+  .filter-btn.active {
+    background-color: #6b4e31;
+    color: white;
+    border-color: #6b4e31;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 20px 20px;
+  }
+  .card {
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid transparent;
+  }
+  .card-left { display: flex; flex-direction: column; justify-content: center;}
+  .card-right { text-align: right; font-size: 12px; color: #555; word-break: keep-all;}
+  .alias { font-size: 10px; color: #666; margin-bottom: 3px; }
+  .name-wrapper { display: flex; align-items: center; gap: 6px; }
+  .icon { font-size: 14px; }
+  .name { font-size: 16px; font-weight: bold; color: #222; }
+  
+  /* 테마 컬러 설정 */
+  .theme-yellow { background-color: #fffbe6; border-color: #fce362; }
+  .theme-pink { background-color: #ffeef4; border-color: #ffb3d1; }
+  .theme-blue { background-color: #eaf4ff; border-color: #99ccff; }
+  .theme-green { background-color: #eefcf3; border-color: #99e6b3; }
+
+  /* POTG 투표 섹션 스타일 */
+  .potg-section {
+    padding: 10px 20px 30px;
+  }
+  .potg-title {
+    text-align: center;
+    color: #6b4e31;
+    font-size: 18px;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  .potg-subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 15px;
+  }
+  .vote-card {
+    background-color: white;
+    border: 2px solid #e0d8c0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.3s;
+  }
+  .vote-card:hover {
+    border-color: #fce362;
+  }
+  .candidate-info {
+    flex: 1;
+  }
+  .candidate-name {
+    font-weight: bold;
+    font-size: 15px;
+    color: #222;
+    margin-bottom: 4px;
+  }
+  .candidate-desc {
+    font-size: 12px;
+    color: #666;
+  }
+  .vote-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 10px;
+  }
+  .vote-count {
+    font-size: 16px;
+    font-weight: bold;
+    color: #6b4e31;
+    min-width: 20px;
+    text-align: center;
+  }
+  .vote-btn {
+    background-color: #fffbe6;
+    border: 2px solid #fce362;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s, background-color 0.2s;
+  }
+  .vote-btn:active {
+    transform: scale(0.9);
+    background-color: #fce362;
+  }
+
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="widget-container">
+  <div class="header"></div>
+  <div class="avatar">👶</div>
+  <div class="title-section">
+    <h1>✦ 우리 팟 멤버 명단 ✦</h1>
+    <p class="subtitle">반가워요~ 잘 부탁드려요 🐾</p>
+  </div>
+  
+  <div class="divider"></div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">모두 보기</button>
+    <button class="filter-btn" data-filter="overwatch">옵치팟</button>
+    <button class="filter-btn" data-filter="friend">지인/제자</button>
+  </div>
+
+  <div class="grid" id="memberGrid">
+    <div class="card theme-yellow" data-category="overwatch"><div class="card-left"><div class="name-wrapper"><span class="icon">🐾</span><span class="name">윈떠</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-blue" data-category="friend"><div class="card-left"><div class="alias">다른 이름: 이재용의~</div><div class="name-wrapper"><span class="icon">🎮</span><span class="name">윤</span></div></div><div class="card-right">산도 제자</div></div>
+    <div class="card theme-pink" data-category="overwatch"><div class="card-left"><div class="alias">다른 이름: 핑하님</div><div class="name-wrapper"><span class="icon">🎮</span><span class="name">금베덕</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-pink" data-category="overwatch"><div class="card-left"><div class="alias">다른 이름: 옴닉/앙골</div><div class="name-wrapper"><span class="icon">🌊</span><span class="name">으심되</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-pink" data-category="overwatch"><div class="card-left"><div class="alias">다른 이름: 갱갱</div><div class="name-wrapper"><span class="icon">🎮</span><span class="name">산도</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-green" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🌿</span><span class="name">제인</span></div></div><div class="card-right">산도/연지/<br>숙취 친구</div></div>
+    <div class="card theme-pink" data-category="overwatch"><div class="card-left"><div class="alias">다른 이름: 숨겨진바지</div><div class="name-wrapper"><span class="icon">🎮</span><span class="name">골햄</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-blue" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🌊</span><span class="name">켄타로</span></div></div><div class="card-right">골햄 옵치 친구</div></div>
+    <div class="card theme-blue" data-category="friend"><div class="card-left"><div class="alias">다른 이름: 십자성</div><div class="name-wrapper"><span class="icon">🌊</span><span class="name">세걸</span></div></div><div class="card-right">산도 제자</div></div>
+    <div class="card theme-green" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🌿</span><span class="name">토디</span></div></div><div class="card-right">윈떠 친구</div></div>
+    <div class="card theme-blue" data-category="overwatch"><div class="card-left"><div class="name-wrapper"><span class="icon">🌊</span><span class="name">숙취비윈더</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-yellow" data-category="overwatch"><div class="card-left"><div class="alias">다른 이름: 빌리</div><div class="name-wrapper"><span class="icon">🐾</span><span class="name">픽하슈</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-pink" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🎮</span><span class="name">악동</span></div></div><div class="card-right">혜니 친구</div></div>
+    <div class="card theme-pink" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🎮</span><span class="name">혜니</span></div></div><div class="card-right">구루루 친구</div></div>
+    <div class="card theme-green" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🌿</span><span class="name">연지</span></div></div><div class="card-right">숙취/산도<br>친구</div></div>
+    <div class="card theme-blue" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🌊</span><span class="name">Naya</span></div></div><div class="card-right">골햄 친구</div></div>
+    <div class="card theme-yellow" data-category="overwatch"><div class="card-left"><div class="name-wrapper"><span class="icon">🐾</span><span class="name">와주</span></div></div><div class="card-right">옵치팟</div></div>
+    <div class="card theme-green" data-category="friend"><div class="card-left"><div class="name-wrapper"><span class="icon">🌿</span><span class="name">9RRRR</span></div></div><div class="card-right">윈떠/으심되<br>친구</div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="potg-section">
+    <div class="potg-title">🏆 이번 주 싸패 투표 🏆</div>
+    <div class="potg-subtitle">가장 멋진 플레이를 보여준 멤버에게 투표하세요!</div>
+    
+    <div class="vote-card">
+      <div class="candidate-info">
+        <div class="candidate-name">🎮 후보 1: (이름 입력)</div>
+        <div class="candidate-desc">(여기에 명장면 설명)</div>
+      </div>
+      <div class="vote-action">
+        <span class="vote-count" id="count1">0</span>
+        <button class="vote-btn" onclick="addVote('count1')">👍</button>
+      </div>
+    </div>
+
+    <div class="vote-card">
+      <div class="candidate-info">
+        <div class="candidate-name">🎮 후보 2: (이름 입력)</div>
+        <div class="candidate-desc">(여기에 명장면 설명 입력)</div>
+      </div>
+      <div class="vote-action">
+        <span class="vote-count" id="count2">0</span>
+        <button class="vote-btn" onclick="addVote('count2')">👍</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // 명단 필터 기능
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filterValue = btn.getAttribute('data-filter');
+      cards.forEach(card => {
+        if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // 투표 숫자 올라가는 기능
+  function addVote(counterId) {
+    const counterElement = document.getElementById(counterId);
+    let currentCount = parseInt(counterElement.innerText);
+    counterElement.innerText = currentCount + 1;
+    
+    // 클릭 시 투표 버튼 팡 터지는 간단한 애니메이션 효과 적용
+    const btn = event.currentTarget;
+    btn.style.transform = 'scale(1.2)';
+    setTimeout(() => {
+      btn.style.transform = 'scale(1)';
+    }, 150);
+  }
+</script>
+
+</body>
+</html>
